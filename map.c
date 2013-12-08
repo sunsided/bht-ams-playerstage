@@ -101,7 +101,7 @@ int markAsVisited(const int x, const int y, const int isCharted)
 {
 	if (x < 0 || x >= MAP_SIZE_X) return 0;
 	if (y < 0 || y >= MAP_SIZE_Y) return 0;
-	cvSet2D(maptest, y, x, CV_RGB((isCharted == 0 ? MAX_GRAY : 0), (isCharted == 0 ? MAX_GRAY : 0), MAX_GRAY));
+	cvSet2D(maptest, y, x, CV_RGB((isCharted == 0 ? MAX_GRAY : 0), (isCharted == 0 ? MAX_GRAY : 0), (isCharted == 0 ? MAX_GRAY : 64)));
 
 #if 0
 	cvShowImage(testwin, maptest);
