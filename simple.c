@@ -16,6 +16,13 @@
 #include "laser.h"
 #include "transforms.h"
 
+/**
+* Mittelt die Sensormesswerte im Bereich zweier Winkel
+* \param[in] ranger Der Laser-Ranger
+* \param[in] start_angle Der Startwinkel in Grad
+* \param[in] end_angle Der Endwinkel in Grad
+* \param[out] sum (Optional) Die ungemittelte Summe der Messwerte; Kann NULL sein.
+*/
 double average_ranges(const playerc_ranger_t *const ranger, double start_angle, double end_angle, double *sum)
 {
 	if (start_angle > end_angle)
@@ -72,18 +79,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// Make the robot go foreward!
-#if 0
-	if (0 != playerc_position2d_set_cmd_vel(position2d, 0.5, 0.0, 0.0, 1))
-		return -1;
-#endif
-
-	// Make the robot spin!
-#if 0
-	if (0 != playerc_position2d_set_cmd_vel(position2d, 0, 0, DTOR(40.0), 1))
-		return -1;
-#endif
-
 	// ---------- In Endlosschleife Labyrinth abfahren
 	while(1) {
 
@@ -130,7 +125,7 @@ int main(int argc, char *argv[])
 
 			/* Wenn rechts frei - fahre rechts.
 			*  Ein sehr freies Feld sorgt für starken Rechtsdrall.
-    		*/
+    			*/
 			w += LERP(LASER_RANGE_MIN, 2, right, 0, 0.4);
 
 			/* Tendenz zum Linksabbiegen hinzufügen 
@@ -151,7 +146,8 @@ int main(int argc, char *argv[])
 			w += LERP_SATURATE(1, 1+LASER_RANGE_MIN, front_exact, 0, 0.5);
 
 			/* Pose und Zustände ausgeben */
-			printf("x=%7.5f, y=%7.5f, theta=%7.5f°, v=%7.5fm/s, omega=%7.5frad/s\n", position2d->px, position2d->py, position2d->pa*180/M_PI, v, w);
+			printf("x=%7.5f, y=%7.5f, theta=%7.5f°, v=%7.5fm/s, omega=%7.5frad/s\n", 
+				position2d->px, position2d->py, position2d->pa*180/M_PI, v, w);
 
 			if (0 != playerc_position2d_set_cmd_vel(position2d, v, 0.0, -w, 1))
 				return -1;
