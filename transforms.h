@@ -33,7 +33,7 @@
 * \param[out] mapx	Die X-Koordinate in Kartenkoordinaten
 * \param[out] mapy	Die Y-Koordinate in Kartenkoordinaten
 */
-void transformLocalToMap(double x, double y, playerc_position2d_t *pos, double *mapx, double *mapy);
+void transformLocalToMap(double x, double y, const playerc_position2d_t *const pos, double *mapx, double *mapy);
 
 /**
 * Transformation von Lasermessungen in Kartenkoordinaten
@@ -44,6 +44,6 @@ void transformLocalToMap(double x, double y, playerc_position2d_t *pos, double *
 * \param[out] mapy	Die Y-Koordinate in Kartenkoordinaten
 * \return 0 wenn erfolgreich, 1 wenn die Messung verworfen werden soll
 */
-int transformLaserToMap(double angle, double radius, playerc_position2d_t *pos, double *mapx, double *mapy);
+int transformLaserToMap(double angle, double radius, const playerc_position2d_t *const pos, double *mapx, double *mapy);
 
 #endif

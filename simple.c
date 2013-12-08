@@ -146,6 +146,9 @@ int main(int argc, char *argv[])
 		// Wait for new data from server
 		playerc_client_read(client);
 
+		/* Karte zeichnen */
+		map_draw(ranger, position2d);
+
 		/* Fahrlogik */
 		if (ranger->ranges_count > 0)
 		{
@@ -207,15 +210,14 @@ int main(int argc, char *argv[])
 			w += LERP_SATURATE(1, 1+LASER_RANGE_MIN, front_exact, 0, 0.5);
 
 			/* Pose und Zustände ausgeben */
+#if 0
 			printf("x=%7.5f, y=%7.5f, theta=%7.5f°, v=%7.5fm/s, omega=%7.5frad/s\n", 
 				position2d->px, position2d->py, position2d->pa*180/M_PI, v, w);
+#endif
 
 			if (0 != playerc_position2d_set_cmd_vel(position2d, v, 0.0, -w, 1))
 				return -1;
 		}
-
-		/* Karte zeichnen */
-		map_draw(ranger, position2d);
 	}
 
 	/* Gedrückte Taste schlucken */

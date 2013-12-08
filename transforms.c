@@ -10,11 +10,13 @@
 * \param[out] mapx	Die X-Koordinate in Kartenkoordinaten
 * \param[out] mapy	Die Y-Koordinate in Kartenkoordinaten
 */
-void transformLocalToMap(double x, double y, playerc_position2d_t *pos, double *mapx, double *mapy)
+void transformLocalToMap(const double x, const double y, const playerc_position2d_t *const pos, double *mapx, double *mapy)
 {
-	double theta = pos->pa;
-	*mapx =  cos(theta)*x - sin(theta)*y + pos->px;
-	*mapy =  sin(theta)*x + cos(theta)*y + pos->py;
+	const double theta = pos->pa;
+	const double sint = sin(theta);
+	const double cost = cos(theta);
+	*mapx =  cost*x - sint*y + pos->px;
+	*mapy =  sint*x + cost*y + pos->py;
 }
 
 /**
@@ -26,7 +28,7 @@ void transformLocalToMap(double x, double y, playerc_position2d_t *pos, double *
 * \param[out] mapy	Die Y-Koordinate in Kartenkoordinaten
 * \return 0 wenn erfolgreich, 1 wenn die Messung verworfen werden soll
 */
-int transformLaserToMap(double angle, double radius, playerc_position2d_t *pos, double *mapx, double *mapy)
+int transformLaserToMap(const double angle, const double radius, const playerc_position2d_t *const pos, double *mapx, double *mapy)
 {
 	/* Entfernungen gleich maximaler Distanz entsorgen */
 	if (radius >= LASER_RANGE_MAX - LASER_RANGE_EPSILON)
@@ -35,8 +37,8 @@ int transformLaserToMap(double angle, double radius, playerc_position2d_t *pos, 
 	}
 
 	/* Transformation von Polarkoordinaten in karthesische Koordinaten */
-	double lx = radius * cos(angle);
-	double ly = radius * sin(angle);
+	const double lx = radius * cos(angle);
+	const double ly = radius * sin(angle);
 
 	/* Transformation in globalen Frame */
 	transformLocalToMap(lx, ly, pos, mapx, mapy);
