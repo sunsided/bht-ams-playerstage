@@ -11,8 +11,19 @@
 * \param[in] targetMin Minimaler Wert in Zieldomain
 * \param[in] targetMax Maximaler Wert in Zieldomain
 */
-#define LERP(domainMin, domainMax, x, targetMin, rangeMax) \
-	((x-domainMin)/(domainMax-domainMin) * rangeMax + targetMin)
+#define LERP(domainMin, domainMax, x, targetMin, targetMax) \
+	((x-domainMin)/(domainMax-domainMin) * targetMax + targetMin)
+
+/**
+* Lineare Interpolation mit Sättigung von einer gegebenen Domain in einen neuen Wertebereich
+* \param[in] domainMin Minimaler Wert von x
+* \param[in] domainMax Maximaler Wert von x
+* \param[in] x Zu interpolierender Wert
+* \param[in] targetMin Minimaler Wert in Zieldomain
+* \param[in] targetMax Maximaler Wert in Zieldomain
+*/
+#define LERP_SATURATE(domainMin, domainMax, x, targetMin, targetMax) \
+	((((x > domainMax) ? domainMax : ((x < domainMin) ? domainMin : x)) -domainMin)/(domainMax-domainMin) * targetMax + targetMin)
 
 /**
 * Transformation von lokalen Koordinaten in Kartenkoordinaten

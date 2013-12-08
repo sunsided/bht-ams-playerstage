@@ -16,6 +16,29 @@
 #include "laser.h"
 #include "transforms.h"
 
+double average_ranges(const playerc_ranger_t *const ranger, double start_angle, double end_angle, double *sum)
+{
+	if (start_angle > end_angle)
+	{
+		double temp = end_angle;
+		end_angle = start_angle;
+		start_angle = temp;
+	}
+
+	int start_index = LASER_RANGEINDEX_FROM_ANGLE_DEG(start_angle);
+	int end_index   = LASER_RANGEINDEX_FROM_ANGLE_DEG(end_angle);
+	double count = end_index - start_index + 1.0;
+	double s = 0;
+	for (int i=start_index; i <= end_index; ++i)
+	{
+		s += ranger->ranges[i];
+	}	
+
+	if (sum != 0)
+		*sum = s;
+
+	return s/count;
+}
 
 int main(int argc, char *argv[])
 {
@@ -67,47 +90,49 @@ int main(int argc, char *argv[])
 		// Wait for new data from server
 		playerc_client_read(client);
 
-#if 0
-		/* Test auf Wand in 1m vor uns */
-		double x,y;
-		transformLocalToMap(1, 0, position2d, &x, &y);
-		int iswall = map_iswall(x, y);
-#else
-		int iswall = 0;
-#endif
-
-		/* Pose und Wand-Check ausgeben */
-		printf("x=%7.5f, y=%7.5f, theta=%7.5f, iswall=%d\n", position2d->px, position2d->py, position2d->pa*180/M_PI, iswall);
-
 		/* Fahrlogik */
 		if (ranger->ranges_count > 0)
 		{
-			double front   = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(  0)];
-			double left45  = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG( 45)];
-			double right45 = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(-45)];
-			double left90  = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG( 90)];
-			double right90 = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(-90)];
-			double right120 = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(-120)];
-			//printf("left90=%7.5f, left45=%7.5f, front sensing: %7.5f, right45=%7.5f, right90=%7.5f\n", left90, left45, front, right45, right90);
+			/* Summe aller Entfernungen */
+			double sum = 0;
+			for (int i=0; i < ranger->ranges_count; ++i)
+			{
+				sum += ranger->ranges[i];
+			}	
 
-#if 1
 			/* Bahngeschwindigkeit ermitteln */
-			double v       = LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, front, 0, 0.2);
+			double front_exact = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(0)];
+			double front      = average_ranges(ranger, -22.5, 22.5, NULL);
+			double front_wide = average_ranges(ranger, -45.0, 45.0, NULL); 
+			double v = LERP(LASER_RANGE_MIN*2, LASER_RANGE_MAX*3/4, front_wide, 0, 0.4);
+			
+			/* Bouncer rechts */
+			double right_front = average_ranges(ranger, 22.5, 67.5, NULL); 
+			double right       = average_ranges(ranger, 67.5, 112.5, NULL); 
+			double right_back  = average_ranges(ranger, 112.5, LASER_MAX_ANGLE_DEG, NULL); 
 
-#if 0
-			/* Winkelgeschwindigkeit ermitteln:
-			 * - Wenn vorne Hindernis, drehen nach links. - je näher Hindernis, desto schneller.
-			 * - Wenn vorne kein Hindernis und rechts frei, drehen nach Rechts. - je freier, desto schneller.
- 			 */
-			double wlinks  = -LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, left90,  0, DTOR(45));
-			double wrechts = (front > 0.5 ? 1 : 0) * LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, right90, 0, DTOR(45));
-			double w = wlinks + wrechts;
+			/* Bouncer links */
+			double left_front  = average_ranges(ranger, -22.5, -67.5, NULL); 
+			double left        = average_ranges(ranger, -67.5, -112.5, NULL); 
+			double left_back   = average_ranges(ranger, -112.5, LASER_MIN_ANGLE_DEG, NULL); 
 
-			double s       = LERP(LASER_RANGE_MIN, 2*LASER_RANGE_MIN, front,   0, 1);
+			double w = 0;
 
-			printf("v=%7.5f, wlinks=%7.5f, wrechts=%7.5f, w=%7.5f\n", v, wlinks, wrechts, w);
-#endif
+			/* Wenn Gefahr vorne rechts, drift links */
+			w -= LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, right_front, 0, 1);
 
+			/* Wenn Gefahr vorne links, drift rechts */
+			w += LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, left_front, 0, 1);
+
+			/* Tendenz zum Linksabbiegen hinzufügen */
+			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, front, 0.5, 0) * LERP(LASER_RANGE_MIN, 2, right, 0, 0.4);
+			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, front_exact, 0.5, 0);
+			w += LERP_SATURATE(1, 1+LASER_RANGE_MIN, front_exact, 0, 0.5);
+	
+			/* Wenn rechts frei - fahre rechts */
+			w += LERP(LASER_RANGE_MIN, 2, right, 0, 0.4);
+
+/*
 			double push_angle = 0;
 			for (int i=0; i < ranger->ranges_count; ++i)
 			{
@@ -123,32 +148,9 @@ int main(int argc, char *argv[])
 			double w = push_angle * M_PI/180.0;
 			double werr = w;
 			w = werr * 0.1;
-
-#if 0			
-			double w_right90 = 0;
-			double w_right45 = 0;
-			double w_left90 = 0;
-			double w_left45 = 0;
-			double w_front = 0;
-
-			if (right90 < LASER_RANGE_MAX)
-				w_right90 += 0.05*(LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, right90, 1, 0.5)-0.5);
-			if (right45 < LASER_RANGE_MAX)
-				w_right45 -= 0.05*LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, right45, 0, 1);
-			if (left90 < LASER_RANGE_MAX)
-				w_left90 = 0.05*LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, left90, 0, 1);
-			if (left45 < LASER_RANGE_MAX)
-				w_left45 = 0.05*LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, left45, 0, 1);
-			if (front < LASER_RANGE_MAX)
-				w_front -= 0.1*LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, front, 0, 1);
-		
-			w += 0.1; // w_right90 + w_right45 + w_left90 + w_left45 + w_front;
-			printf("l90=%7.5f, l45=%7.5f, f=%7.5f, r45=%7.5f, r90=%7.5f\n", w_left90, w_left45, w_front, w_right45, w_right90);
-#endif
-#else
-			double v = 0.0;
-			double w = 0.2;
-#endif
+*/
+			/* Pose und Zustände ausgeben */
+			printf("x=%7.5f, y=%7.5f, theta=%7.5f°, v=%7.5fm/s, omega=%7.5frad/s\n", position2d->px, position2d->py, position2d->pa*180/M_PI, v, w);
 
 			if (0 != playerc_position2d_set_cmd_vel(position2d, v, 0.0, -w, 1))
 				return -1;

@@ -50,9 +50,10 @@ int map_iswall(double x, double y)
 */
 void setze_wand_dick(double x, double y)
 {
-	for (int pady = -1; pady < 2; ++pady) 
+	const int width = 2;
+	for (int pady = -width/2; pady < width; ++pady) 
 	{
-		for (int padx = -1; padx < 2; ++padx)
+		for (int padx = -width/2; padx < width; ++padx)
 		{
 			cvSet2D( mapimg,
 			    MAP_OFFS_Y-(int)(MAP_SCALE*y)+pady,
@@ -73,9 +74,10 @@ void setze_wand_dick(double x, double y)
 */
 void setze_gesehen_dick(double x, double y)
 {
-	for (int pady = -1; pady < 2; ++pady) 
+	const int width = 2;
+	for (int pady = -width/2; pady < width; ++pady) 
 	{
-		for (int padx = -1; padx < 2; ++padx)
+		for (int padx = -width/2; padx < width; ++padx)
 		{
 			CvScalar s = cvGet2D( mapimg,
     	        MAP_OFFS_Y-(int)(MAP_SCALE*y)+pady,
@@ -119,7 +121,7 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 		/* Dicke Wände */
 		setze_wand_dick(x, y);
 
-		/* Sichtlinie abgreifen */
+		/* Sichtlinie als gesehen markieren */
 		double r = 0;
 		const double deltaRadius = 0.1;
 		x = y = -1;
