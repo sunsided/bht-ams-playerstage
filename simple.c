@@ -147,7 +147,11 @@ int main(int argc, char *argv[])
 		playerc_client_read(client);
 
 		/* Karte zeichnen */
-		map_draw(ranger, position2d);
+		int mapComplete = map_draw(ranger, position2d);
+		if (mapComplete) {
+			printf("Karte vollständig erstellt.\n");
+			break;
+		}
 
 		/* Fahrlogik */
 		if (ranger->ranges_count > 0)

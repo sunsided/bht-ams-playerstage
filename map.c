@@ -15,7 +15,7 @@
 #endif 
 
 static const char* mapwin = "Robot Map";
-static const char* testwin = "Map Fill Check";
+static const char* testwin = "Frontier Detection";
 static IplImage* mapimg  = NULL;     // Image of the map
 static IplImage* maptest = NULL;     /* Bild für den Scan-Algorithmus */
 static int initialized = 0;
@@ -502,17 +502,19 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 	}
 
 
-	checkForOpenSpaces(pos->px, pos->py);
+	/* Unbekannte Grenzen erkennen */
+	int foundUncharted = checkForOpenSpaces(pos->px, pos->py);
 
+	// --------------------------------------------------
 
-   // --------------------------------------------------
+	cvSet2D( mapimg,
+		    MAP_OFFS_Y-(int)(MAP_SCALE*pos->py),
+		    MAP_OFFS_X+(int)(MAP_SCALE*pos->px),
+		    CV_RGB(MAX_GRAY,0,0)
+		  );
+	map_show();
 
-   cvSet2D( mapimg,
-            MAP_OFFS_Y-(int)(MAP_SCALE*pos->py),
-            MAP_OFFS_X+(int)(MAP_SCALE*pos->px),
-            CV_RGB(MAX_GRAY,0,0)
-          );
-   return map_show();
+	return (foundUncharted == 0);
 }
 
 int map_show()
