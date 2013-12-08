@@ -50,7 +50,7 @@ int map_iswall(double x, double y)
 */
 void setze_wand_dick(double x, double y)
 {
-	const int width = 2;
+	const int width = 1;
 	for (int pady = -width/2; pady < width; ++pady) 
 	{
 		for (int padx = -width/2; padx < width; ++padx)
@@ -72,8 +72,11 @@ void setze_wand_dick(double x, double y)
 * \param[in] g Der G-Wert
 * \param[in] b Der B-Wert
 */
-void setze_gesehen_dick(double x, double y)
+void setze_gesehen_dick(double x, double y, int is_frontier)
 {
+	const int frontier_value = 92;
+	const int seen_value = 64;
+
 	const int width = 2;
 	for (int pady = -width/2; pady < width; ++pady) 
 	{
@@ -84,14 +87,25 @@ void setze_gesehen_dick(double x, double y)
 	            MAP_OFFS_X+(int)(MAP_SCALE*x)+padx
 				);
 
-			// teste auf Wand
+			/* Wenn Wand, ignorieren */
 			if (s.val[1] == MAX_GRAY)
 				continue;
+
+			/* Wenn bereits markiert, ignorieren */
+			int green = s.val[1];
+			if (green > seen_value)
+				continue;
+
+			/* Stärke der Enfärbung */
+			if (is_frontier)
+				green = frontier_value;
+			else
+				green = seen_value;
 
 			cvSet2D( mapimg,
 			    MAP_OFFS_Y-(int)(MAP_SCALE*y)+pady,
 			    MAP_OFFS_X+(int)(MAP_SCALE*x)+padx,
-			    CV_RGB(s.val[2], 92, s.val[0])
+			    CV_RGB(s.val[2], green, s.val[0])
 			  );
 		}
 	}
@@ -113,13 +127,7 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 
 		/* Lasermessung transformieren */
 		double x, y;
-		if (!transformLaserToMap(angle, radius, pos, &x, &y))
-		{
-			continue;
-		}
-
-		/* Dicke Wände */
-		setze_wand_dick(x, y);
+		int is_frontier = transformLaserToMap(angle, radius, pos, &x, &y);
 
 		/* Sichtlinie als gesehen markieren */
 		double r = 0;
@@ -134,8 +142,14 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 				continue;
 			x = newX;
 			y = newY;
-			setze_gesehen_dick(x, y);
+			setze_gesehen_dick(x, y, is_frontier);
 		} while (r < radius - deltaRadius);
+
+		/* Wand zeichnen, wenn Wert innerhalb Sensorradius */
+		if (is_frontier)
+		{
+			setze_wand_dick(x, y);
+		}
 	}
 
 
