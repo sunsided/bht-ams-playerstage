@@ -70,18 +70,6 @@ int map_init()
 	return 0;
 }
 
-int map_iswall(double x, double y)
-{
-	if (!initialized) { if (map_init()) return 1; }
-
-	CvScalar s = cvGet2D( mapimg,
-            MAP_OFFS_Y-(int)(MAP_SCALE*y),
-            MAP_OFFS_X+(int)(MAP_SCALE*x)
-          );
-
-	return s.val[0] > 0;
-}
-
 /**
 * Addiert einen Farbwert {r,g,b} auf den gegebenen Pixel {x,y}
 * \param[in] x Die X-Koordinate
