@@ -148,9 +148,11 @@ int main(int argc, char *argv[])
 
 		/* Karte zeichnen */
 		int mapComplete = map_draw(ranger, position2d);
-		if (mapComplete) {
+		if (mapComplete) 
+		{
+			/* TODO: Meldung nur einmal anzeigen */
 			printf("Karte vollständig erstellt.\n");
-			break;
+			continue;
 		}
 
 		/* Fahrlogik */
