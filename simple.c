@@ -107,11 +107,13 @@ int main(int argc, char *argv[])
 			double v = LERP(LASER_RANGE_MIN*2, LASER_RANGE_MAX*3/4, front_wide, 0, 0.4);
 			
 			/* Bouncer rechts */
+			double right_front_exact = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(50)];
 			double right_front = average_ranges(ranger, 22.5, 67.5, NULL); 
 			double right       = average_ranges(ranger, 67.5, 112.5, NULL); 
 			double right_back  = average_ranges(ranger, 112.5, LASER_MAX_ANGLE_DEG, NULL); 
 
 			/* Bouncer links */
+			double left_front_exact = ranger->ranges[LASER_RANGEINDEX_FROM_ANGLE_DEG(-50)];
 			double left_front  = average_ranges(ranger, -22.5, -67.5, NULL); 
 			double left        = average_ranges(ranger, -67.5, -112.5, NULL); 
 			double left_back   = average_ranges(ranger, -112.5, LASER_MIN_ANGLE_DEG, NULL); 
@@ -120,35 +122,34 @@ int main(int argc, char *argv[])
 
 			/* Wenn Gefahr vorne rechts, drift links */
 			w -= LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, right_front, 0, 1);
+			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, right_front_exact, 0, 1);
 
 			/* Wenn Gefahr vorne links, drift rechts */
 			w += LERP(LASER_RANGE_MIN, LASER_RANGE_MAX, left_front, 0, 1);
+			w += LERP_SATURATE(LASER_RANGE_MIN, 1, left_front_exact, 0, 1);
 
-			/* Tendenz zum Linksabbiegen hinzufügen */
-			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, front, 0.5, 0) * LERP(LASER_RANGE_MIN, 2, right, 0, 0.4);
-			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, front_exact, 0.5, 0);
-			w += LERP_SATURATE(1, 1+LASER_RANGE_MIN, front_exact, 0, 0.5);
-	
-			/* Wenn rechts frei - fahre rechts */
+			/* Wenn rechts frei - fahre rechts.
+			*  Ein sehr freies Feld sorgt für starken Rechtsdrall.
+    		*/
 			w += LERP(LASER_RANGE_MIN, 2, right, 0, 0.4);
 
-/*
-			double push_angle = 0;
-			for (int i=0; i < ranger->ranges_count; ++i)
-			{
-				const double degree = LASER_DEGREE_FROM_RANGEINDEX(i);
-				const double distance = ranger->ranges[i];
-				const double offset = 0.5;
-				const double factor = 1.0/(distance + offset);
-				push_angle += degree * factor / ranger->ranges_count;
-			}		
-			printf("target angle=%7.5f\n", push_angle);
+			/* Tendenz zum Linksabbiegen hinzufügen 
+			*  Gewichten mit dem Bestreben, rechts abzubiegen, wenn dort frei ist.
+			*  Hierdurch gewinnt das Rechtsabbiegen.
+			*/
+			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, front, 0.5, 0) * LERP(LASER_RANGE_MIN, 2, right, 0, 0.4);
 
+			/* Hindernis exakt voraus vermeiden durch Linksabbiegen. 
+			*  Grad des Unterschreitens der "Fluchtdistanz" bestimmt Stärke.
+			*/
+			w -= LERP_SATURATE(LASER_RANGE_MIN, 1, front_exact, 0.5, 0);
+			
+			/* Linksabbiegen vermeiden, wenn kein Hindernis.
+			*  Dieser Term korrigiert die vorherige Interpolation für Messwerte
+			*  die hinter die "Fluchtdistanz" liegen.
+			*/
+			w += LERP_SATURATE(1, 1+LASER_RANGE_MIN, front_exact, 0, 0.5);
 
-			double w = push_angle * M_PI/180.0;
-			double werr = w;
-			w = werr * 0.1;
-*/
 			/* Pose und Zustände ausgeben */
 			printf("x=%7.5f, y=%7.5f, theta=%7.5f°, v=%7.5fm/s, omega=%7.5frad/s\n", position2d->px, position2d->py, position2d->pa*180/M_PI, v, w);
 
