@@ -172,7 +172,6 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 		do 
 		{
 			/* TODO: OpenCV line verwenden */
-			r += deltaRadius;
 			double newX, newY;
 			transformLaserToMap(angle, r, pos, &newX, &newY);
 			if (newX == x && newY == y)
@@ -180,6 +179,7 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 			x = newX;
 			y = newY;
 			setze_gesehen_dick(x, y, is_frontier);
+			r += deltaRadius;
 		} while (r < radius - deltaRadius);
 	}
 

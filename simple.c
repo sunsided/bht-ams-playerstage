@@ -152,6 +152,10 @@ int main(int argc, char *argv[])
 		{
 			/* TODO: Meldung nur einmal anzeigen */
 			printf("Karte vollständig erstellt.\n");
+
+			if (0 != playerc_position2d_set_cmd_vel(position2d, 0, 0.0, 0, 1))
+				return -1;
+
 			continue;
 		}
 
