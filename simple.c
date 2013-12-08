@@ -2,6 +2,8 @@
 #define _GNU_SOURCE
 #endif
 
+#include <termios.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -15,6 +17,60 @@
 #include "map.h"
 #include "laser.h"
 #include "transforms.h"
+
+/**
+* Setzt den canonical mode des Terminals (warten auf RETURN)
+* \param[in] enable Positiv wenn aktiviert werden soll, sonst null
+*
+* Kudos: http://cc.byexamples.com/2007/04/08/non-blocking-user-input-in-loop-without-ncurses/
+*/
+void setCanonicalMode(int enable)
+{
+	struct termios ttystate;
+	tcgetattr(STDIN_FILENO, &ttystate);
+
+	if (enable == 0)
+	{
+		ttystate.c_lflag &= ~ICANON;
+		/* Anzahl der minimal zu lesenden Zeichen auf 1 setzen */
+		ttystate.c_cc[VMIN] = 1;
+	}
+	else
+	{
+		ttystate.c_lflag |= ICANON;
+	}
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
+}
+
+/**
+* Setzt den canonical mode zurück.
+*/
+void restoreCanonicalMode()
+{
+	setCanonicalMode(1);
+}
+
+/**
+* Ermittelt, ob eine Taste gedrückt wurde
+* \return Null, wenn keine Taste gedrückt, ansonsten ungleich null
+*
+* Kudos: http://cc.byexamples.com/2007/04/08/non-blocking-user-input-in-loop-without-ncurses/
+*/
+int isKeyPressed()
+{
+	struct timeval tv;
+	fd_set fds;
+
+	/* timeout 0s = kein Timeout*/
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	FD_ZERO(&fds);
+
+	FD_SET(STDIN_FILENO, &fds);
+	select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+	return FD_ISSET(STDIN_FILENO, &fds);
+}
 
 /**
 * Mittelt die Sensormesswerte im Bereich zweier Winkel
@@ -59,6 +115,10 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Canonical Mode für Tastenüberwachung */
+	atexit(restoreCanonicalMode);
+	setCanonicalMode(0);
+
 	/* Create a client and connect it to the server. */
 	client = playerc_client_create(NULL, argv[1], 6665);
 	if (0 != playerc_client_connect(client)) {
@@ -79,8 +139,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// ---------- In Endlosschleife Labyrinth abfahren
-	while(1) {
+	/* Raum abfahren */
+	printf("Tastendruck zum Beenden.\n");
+	while(!isKeyPressed()) {
 
 		// Wait for new data from server
 		playerc_client_read(client);
@@ -156,6 +217,10 @@ int main(int argc, char *argv[])
 		/* Karte zeichnen */
 		map_draw(ranger, position2d);
 	}
+
+	/* Gedrückte Taste schlucken */
+	fgetc(stdin);
+	printf("Räume auf.\n");
 
 	/* Shutdown */
 	playerc_position2d_unsubscribe(position2d);
