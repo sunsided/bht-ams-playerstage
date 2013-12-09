@@ -5,7 +5,7 @@ Kurs Autonome Mobile Systeme an der Beuth Hochschule für Technik. Simulation ei
 
 ### Erster Ansatz zur Exploration ###
 
-Ein früher Ansatz mittels vermaschten P-Reglern zum Steuern der Bahn- und Winkelgeschwindigkeit in Abhängigkeit von der Nähe und Entfernung zu Hindernissen.
+Ein früher Ansatz mittels vermaschter P-Regler zum Steuern der Bahn- und Winkelgeschwindigkeit in Abhängigkeit von der Nähe und Entfernung zu Hindernissen.
 
 [![Exploration Demo Video](http://img.youtube.com/vi/eAbF3QBGwzA/0.jpg)](http://www.youtube.com/watch?v=eAbF3QBGwzA)
 
