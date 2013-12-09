@@ -149,7 +149,7 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
    	// Hier kommt der Code zum Zeichnen der Waende hinein
    	// --------------------------------------------------
 
-	for (int a=0; a < (int)ranger->ranges_count; ++a)       
+	for (uint32_t a=0; a < ranger->ranges_count; ++a)       
 	{
 		/* Polarkoordinaten beziehen */
 		double angle = a * LASER_ANGULAR_RESOLUTION_RAD + LASER_MIN_ANGLE_RAD;
