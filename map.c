@@ -13,8 +13,8 @@
 
 static const char* mapwin = "Robot Map";
 static const char* testwin = "Frontier Detection";
-IplImage* mapimg  = NULL;     // Image of the map
-IplImage* mapimga = NULL;     /* Annotations für die Karte */
+static IplImage* mapimg  = NULL;     // Image of the map
+static IplImage* mapimga = NULL;     /* Annotations für die Karte */
 IplImage* maptest = NULL;     /* Bild für den Scan-Algorithmus */
 static int initialized = 0;
 

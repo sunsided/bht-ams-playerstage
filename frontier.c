@@ -5,8 +5,6 @@
 #include "math.h"
 #include "limits.h"
 
-extern IplImage* mapimg;     // Image of the map
-extern IplImage* mapimga;     /* Annotations für die Karte */
 extern IplImage* maptest;     /* Bild für den Scan-Algorithmus */
 
 /**
