@@ -1,3 +1,14 @@
+/**
+* Erkennung von noch nicht erforschten Bereichen.
+*
+* Es wird eine abgewandelte Form des Queue-Linear Flood Fill-Algorithmus verwendet,
+* wie er z.B. unter http://www.codeproject.com/Articles/16405/Queue-Linear-Flood-Fill-A-Fast-Flood-Fill-Algorith
+* beschrieben wird.
+*
+* Hierbei wird ein zusätzliches OpenCV-Bild als Backend verwendet, in welchem auf Grenzen 
+* abgescannte Bereiche blau, sowie gefundene Grenzen weiß markiert werden.
+*/
+
 #include "map.h"
 #include "opencv/cv.h"
 #include "stdio.h"

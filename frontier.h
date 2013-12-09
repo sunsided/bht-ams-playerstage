@@ -1,3 +1,7 @@
+/**
+* Erkennung von noch nicht erforschten Bereichen.
+*/
+
 #ifndef FRONTIER_H
 #define FRONTIER_H
 
