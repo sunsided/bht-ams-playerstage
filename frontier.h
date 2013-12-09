@@ -15,6 +15,6 @@
 * \return Null, wenn die Karte voll abgedeckt ist oder nicht-Null, 
 *         wenn offene Bereiche existieren.
 */
-int checkForOpenSpaces(const double startX, const double startY);
+int checkForOpenSpaces(const double startX, const double startY, double *outNearestX, double* outNearestY);
 
 #endif

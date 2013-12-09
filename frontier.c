@@ -182,7 +182,7 @@ static inline int getNearest(const int referenceX, const int referenceY, const i
 * \return Null, wenn die Karte voll abgedeckt ist oder nicht-Null, 
 *         wenn offene Bereiche existieren.
 */
-int checkForOpenSpaces(const double startX, const double startY)
+int checkForOpenSpaces(const double startX, const double startY, double *outNearestX, double* outNearestY)
 {
 	/* TODO: Ort des Fehlschlags zurückgeben für closest-frontier */
 
@@ -321,33 +321,33 @@ int checkForOpenSpaces(const double startX, const double startY)
 	/* Aufräumen */
 	assert (head == (scanlinerange_chain_t*)0x0);
 
+	/* Punkte ausgeben */
+	if (foundUncharted)
+	{
+		if (outNearestX != (double*)0 && outNearestY != (double*)0)
+		{
+			*outNearestX = (nearestUnchartedX-MAP_OFFS_X)/MAP_SCALE;
+			*outNearestY = (MAP_OFFS_Y-nearestUnchartedY)/MAP_SCALE;
+		}
+	}
+
+#if VERBOSE
 	if (foundUncharted)
 	{
 		printf("%d unkartierte. Nähester: x=%d, y=%d (Distanz: %d)\n", 
 			foundUncharted, nearestUnchartedX, nearestUnchartedY, distanceToNearestUncharted);
+
+		if (outNearestX != (double*)0 && outNearestY != (double*)0)
+		{
+			*outNearestX = (nearestUnchartedX-MAP_OFFS_X)/MAP_SCALE;
+			*outNearestY = (MAP_OFFS_Y-nearestUnchartedY)/MAP_SCALE;
+		}
 	}
 	else
 	{
 		printf("Keine unkartierten Punkte gefunden.\n");
 	}
-
-	/* Karte sichern */
-	cvCopy(mapimg, mapimga);
-
-	/* Markierungen in Karte setzen */
-	CvScalar color;
-	color.val[0] = 0;
-	color.val[1] = MAX_GRAY;
-	color.val[2] = MAX_GRAY;
-	color.val[3] = 0;
-
-	CvPoint start, end;
-	start.x = mapx;
-	start.y = mapy;
-
-	end.x = nearestUnchartedX;
-	end.y = nearestUnchartedY;
-	cvLine(mapimga, start, end, color, 1, 8, 0);
+#endif
 
 	return foundUncharted;
 }

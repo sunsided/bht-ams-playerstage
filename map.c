@@ -185,17 +185,50 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 
 
 	/* Unbekannte Grenzen erkennen */
-	int foundUncharted = checkForOpenSpaces(pos->px, pos->py);
+	double nearestX, nearestY;
+	int foundUncharted = checkForOpenSpaces(pos->px, pos->py, &nearestX, &nearestY);
 
-	// --------------------------------------------------
-
+	/* Aktuelle Position als Track zeichnen */
 	cvSet2D( mapimg,
 		    MAP_OFFS_Y-(int)(MAP_SCALE*pos->py),
 		    MAP_OFFS_X+(int)(MAP_SCALE*pos->px),
 		    CV_RGB(MAX_GRAY,0,0)
 		  );
-	map_show();
 
+	/* Vektor zum nähesten unkartierten Punkt */
+	if (foundUncharted)
+	{
+		printf("%d unkartierte. Nähester: x=%7.5f, y=%7.5f\n", 
+			foundUncharted, nearestX, nearestY);
+
+		/* Karte sichern */
+		cvCopy(mapimg, mapimga);
+
+		/* Markierungen in Karte setzen */
+		CvScalar color;
+		color.val[0] = 0;
+		color.val[1] = MAX_GRAY;
+		color.val[2] = MAX_GRAY;
+		color.val[3] = 0;
+
+		CvPoint start, end;
+		start.x = MAP_OFFS_X+(int)(MAP_SCALE*pos->px);
+		start.y = MAP_OFFS_Y-(int)(MAP_SCALE*pos->py);
+
+		end.x = MAP_OFFS_X+(int)(MAP_SCALE*nearestX);
+		end.y = MAP_OFFS_Y-(int)(MAP_SCALE*nearestY);
+		cvLine(mapimga, start, end, color, 1, 8, 0);
+	}
+	else
+	{
+		printf("Keine unkartierten Punkte gefunden.\n");
+
+		/* Karte sichern */
+		cvCopy(mapimg, mapimga);
+	}
+
+	/* Karte anzeigen und gut. */
+	map_show();
 	return (foundUncharted == 0);
 }
 
