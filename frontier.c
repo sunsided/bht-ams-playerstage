@@ -33,7 +33,7 @@ typedef struct _scanlinerange_chain {
 * \param[in] y Die Y-Koordinate in Kartenkoordinaten
 * \return Null, wenn die Koordinate nicht besucht werden muss, ansonsten nicht-null.
 */
-int shouldBeVisited(const int x, const int y)
+static inline int shouldBeVisited(const int x, const int y)
 {
 	if (x < 0 || x >= MAP_SIZE_X) return 0;
 	if (y < 0 || y >= MAP_SIZE_Y) return 0;
@@ -47,7 +47,7 @@ int shouldBeVisited(const int x, const int y)
 * \param[in] y Die Y-Koordinate in Kartenkoordinaten
 * \return Null, wenn die Koordinate ungültig war, ansonsten nicht-null.
 */
-int markAsVisited(const int x, const int y, const int isCharted)
+static inline int markAsVisited(const int x, const int y, const int isCharted)
 {
 	if (x < 0 || x >= MAP_SIZE_X) return 0;
 	if (y < 0 || y >= MAP_SIZE_Y) return 0;
