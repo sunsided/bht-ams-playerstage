@@ -11,18 +11,18 @@ Ein früher Ansatz mittels vermaschten P-Reglern zum Steuern der Bahn- und Winke
 
 ### Stage ###
 
-Das Set-Up.
+Das Set-Up: Schlupf- und messfehlerfreier Roboter mit Differentialantrieb und v-omega-Steuerung.
 
 ![Stage](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/stage.png)
 
 ### Karte ###
 
-Die vom Roboter erstellte Karte.
+Die vom Roboter erstellte Karte. Der gelbe Vektor weist auf die näheste unerforschte Grenze, wobei die Manhattan-Distanz ohne Betrachtung von Hindernissen verwendet wurde.
 
 ![Map](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/map.png)
 
 ### Frontiers ###
 
-Mittels des Queue-Linear Flood Fill-Algorithmus erkannte Wissensgrenzen (weiß) zeigen Bereiche, die vom Roboter noch nicht gescannt wurden.
+Mittels des Queue-Linear Flood Fill-Algorithmus erkannte Wissensgrenzen (weiß) zeigen Bereiche, die vom Roboter noch nicht gescannt wurden. Treten keine Grenzen mehr in der Karte auf, ist der Bereich vollständig erkundet.
 
 ![Frontiers](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/frontiers.png)
