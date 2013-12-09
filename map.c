@@ -221,7 +221,9 @@ int map_draw(playerc_ranger_t *ranger, playerc_position2d_t *pos)
 	}
 	else
 	{
+#if 0
 		printf("Keine unkartierten Punkte gefunden.\n");
+#endif
 
 		/* Karte sichern */
 		cvCopy(mapimg, mapimga);

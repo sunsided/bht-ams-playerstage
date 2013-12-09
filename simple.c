@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
 	playerc_client_t *client;
 	playerc_position2d_t *position2d;
 	playerc_ranger_t *ranger;
+	static int mapCreatedShown = 0;
 
 	if (argc<2)
 	{
@@ -150,11 +151,14 @@ int main(int argc, char *argv[])
 		int mapComplete = map_draw(ranger, position2d);
 		if (mapComplete) 
 		{
-			/* TODO: Meldung nur einmal anzeigen */
-			printf("Karte vollständig erstellt.\n");
+			if (!mapCreatedShown)
+			{
+				mapCreatedShown = 1;
+				printf("Karte vollständig erstellt. Tastendruck zum Beenden.\n");
 
-			if (0 != playerc_position2d_set_cmd_vel(position2d, 0, 0.0, 0, 1))
-				return -1;
+				if (0 != playerc_position2d_set_cmd_vel(position2d, 0, 0.0, 0, 1))
+					return -1;
+			}
 
 			continue;
 		}
