@@ -178,6 +178,61 @@ static inline int getNearest(const int referenceX, const int referenceY, const i
 }
 
 /**
+* Erzeugt neue Scanlines im Bereich {\see startX}..{\see endX} in der gegebenen Y-Koordinate
+* und hängt sie in die gegebene linked list ein.
+* \param[in] startX Start-X-Koordinate
+* \param[in] endX   End-X-Koordinate
+* \param[in] y      Neue Y-Koordinate
+* \param[in] mapx   Aktuelle X-Koordinate des Roboters auf der Karte
+* \param[in] mapy   Aktuelle Y-Koordinate des Roboters auf der Karte
+* \param[inout] tail Tail der linked list
+* \param[inout] nearestUnchartedX X-Koordinate des nähesten unkartierten Punktes
+* \param[inout] nearestUnchartedY Y-Koordinate des nähesten unkartierten Punktes
+* \param[out]   distanceToNearestUncharted Distanz zum nähesten unkartierten Punkt
+* \return Anzahl der gefundenen, unkartierten Punkte in den neuen Scanline-Segmenten.
+*/
+uint32_t extendScanLine(const int startX, const int endX, const int y, const int mapx, const int mapy, scanlinerange_chain_t **tail, int *nearestUnchartedX, int *nearestUnchartedY, int *distanceToNearestUncharted)
+{
+	scanlinerange_t range;
+	uint32_t foundUncharted = 0;
+
+	for (int x = startX; x <= endX; ++x)
+	{
+		/* neue Scanline bilden, wenn noch nicht besucht */
+		if (!shouldBeVisited(x, y)) continue;
+		uint32_t unchartedCount = buildScanLine(x, y, &range);
+		assert(range.y == y);
+
+		/* wenn unkartiert gefunden, kürzeste Distanz ermitteln */
+		if (unchartedCount != 0)
+		{
+			foundUncharted += unchartedCount;
+
+			if (range.leftUncharted)
+			{
+				*distanceToNearestUncharted = getNearest(mapx, mapy, range.startx, range.y, *nearestUnchartedX, *nearestUnchartedY);
+			}
+			if (range.rightUncharted)
+			{
+				*distanceToNearestUncharted = getNearest(mapx, mapy, range.endx, range.y, *nearestUnchartedX, *nearestUnchartedY);
+			}
+		}
+
+		/* Registrierung verhindern, da sonst bleedout in vertikaler Richtung*/
+		if (range.startx == range.endx) continue;
+
+		/* Scanline eintüten */
+		scanlinerange_chain_t *item = (scanlinerange_chain_t*)malloc(sizeof(scanlinerange_chain_t));
+		memcpy(&item->scanline, &range, sizeof(scanlinerange_t));
+		item->next = (*tail)->next;
+		(*tail)->next = item;
+		(*tail) = item;
+	}
+
+	return foundUncharted;
+}
+
+/**
 * Überprüft, ob die Karte offene Bereiche beinhaltet.
 *
 * Dieser Algorithmus ist eine Abwandlung des Queue-Linear Flood Fill,
@@ -206,7 +261,7 @@ int checkForOpenSpaces(const double startX, const double startY, double *outNear
 	/* Testtabelle leeren */
 	cvZero(maptest);
 
-	/* build the very first scanline */
+	/* Erste Scanline erzeugen */
 	scanlinerange_t range;
 	int unchartedCount = buildScanLine(mapx, mapy, &range);
 	/* NOTE: Im Prinzip könnte hier bereits abgebrochen werden, wenn direction != 0.
@@ -219,12 +274,16 @@ int checkForOpenSpaces(const double startX, const double startY, double *outNear
 		foundUncharted += unchartedCount;
 
 		if (range.leftUncharted)
+		{
 			distanceToNearestUncharted = getNearest(mapx, mapy, range.startx, range.y, nearestUnchartedX, nearestUnchartedY);
+		}
 		if (range.rightUncharted)
+		{
 			distanceToNearestUncharted = getNearest(mapx, mapy, range.endx, range.y, nearestUnchartedX, nearestUnchartedY);
+		}
 	}
 
-	/* Ersten Scaline-Queueintrag erzeugen */
+	/* Ersten Scanline-Queueintrag erzeugen */
 	scanlinerange_chain_t *head = (scanlinerange_chain_t*)malloc(sizeof(scanlinerange_chain_t));
 	memcpy(&head->scanline, &range, sizeof(scanlinerange_t));
 	head->next = (scanlinerange_chain_t*)0x0;
@@ -239,86 +298,12 @@ int checkForOpenSpaces(const double startX, const double startY, double *outNear
 		const int y      = head->scanline.y;
 
 		/* Obere Scanline erweitern */
-		for (int x = startX; x <= endX; ++x)
-		{
-			/* neue Scanline bilden, wenn noch nicht besucht */
-			if (!shouldBeVisited(x, y-1)) continue;
- 			unchartedCount = buildScanLine(x, y-1, &range);
-			assert(range.y == y-1);
-
-			/* wenn unkartiert gefunden, kürzeste Distanz ermitteln */
-			if (unchartedCount != 0)
-			{
-				foundUncharted += unchartedCount;
-#if VERBOSE
-				int oldDistance = distanceToNearestUncharted;
-#endif
-	
-				if (range.leftUncharted)
-					distanceToNearestUncharted = getNearest(mapx, mapy, range.startx, range.y, nearestUnchartedX, nearestUnchartedY);
-				if (range.rightUncharted)
-					distanceToNearestUncharted = getNearest(mapx, mapy, range.endx, range.y, nearestUnchartedX, nearestUnchartedY);
-
-#if VERBOSE
-				if (oldDistance > distanceToNearestUncharted)
-				{
-					printf("Näheren Punkt oberhalb gefunden: x=%d, y=%d (Distanz: %d zu %d,%d)\n", 
-						nearestUnchartedX, nearestUnchartedY, distanceToNearestUncharted, mapx, mapy);
-				}
-#endif
-			}
-
-			/* Registrierung verhindern, da sonst bleedout in vertikaler Richtung*/
-			if (range.startx == range.endx) continue;
-
-			/* Scanline eintüten */
-			scanlinerange_chain_t *item = (scanlinerange_chain_t*)malloc(sizeof(scanlinerange_chain_t));
-			memcpy(&item->scanline, &range, sizeof(scanlinerange_t));
-			item->next = tail->next;
-			tail->next = item;
-			tail = item;
-		}
+		foundUncharted += extendScanLine(startX, endX, y-1, mapx, mapy, &tail, 
+										 &nearestUnchartedX, &nearestUnchartedY, &distanceToNearestUncharted);
 		
 		/* Untere Scanline erweitern */
-		for (int x = startX; x <= endX; ++x)
-		{
-			/* neue Scanline bilden, wenn noch nicht besucht */
-			if (!shouldBeVisited(x, y+1)) continue;
-			unchartedCount = buildScanLine(x, y+1, &range);
-			assert(range.y == y+1);
-
-			/* wenn unkartiert gefunden, kürzeste Distanz ermitteln */
-			if (unchartedCount != 0)
-			{
-				foundUncharted += unchartedCount;
-#if VERBOSE
-				int oldDistance = distanceToNearestUncharted;
-#endif
-	
-				if (range.leftUncharted)
-					distanceToNearestUncharted = getNearest(mapx, mapy, range.startx, range.y, nearestUnchartedX, nearestUnchartedY);
-				if (range.rightUncharted)
-					distanceToNearestUncharted = getNearest(mapx, mapy, range.endx, range.y, nearestUnchartedX, nearestUnchartedY);
-
-#if VERBOSE
-				if (oldDistance > distanceToNearestUncharted)
-				{
-					printf("Näheren Punkt oberhalb gefunden: x=%d, y=%d (Distanz: %d zu %d,%d)\n", 
-						nearestUnchartedX, nearestUnchartedY, distanceToNearestUncharted, mapx, mapy);
-				}
-#endif
-			}
-
-			/* Registrierung verhindern, da sonst bleedout in vertikaler Richtung*/
-			if (range.startx == range.endx) continue;
-
-			/* Scanline eintüten */
-			scanlinerange_chain_t *item = (scanlinerange_chain_t*)malloc(sizeof(scanlinerange_chain_t));
-			memcpy(&item->scanline, &range, sizeof(scanlinerange_t));
-			item->next = tail->next;
-			tail->next = item;
-			tail = item;
-		}
+		foundUncharted += extendScanLine(startX, endX, y+1, mapx, mapy, &tail, 
+										 &nearestUnchartedX, &nearestUnchartedY, &distanceToNearestUncharted);
 
 		/* Nächste Scanline sichern und head freigeben */
 		scanlinerange_chain_t* next = head->next;
