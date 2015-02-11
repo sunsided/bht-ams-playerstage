@@ -11,7 +11,7 @@ Vagrant.configure(2) do |config|
   	apt-get -y install --no-install-recommends \
   		libopencv-dev libopencv-highgui-dev \
   		xserver-xorg-video-dummy x11vnc \
-  		fluxbox xinit \
+  		fluxbox xterm \
   		supervisor \
   		git-core
 
@@ -21,6 +21,9 @@ Vagrant.configure(2) do |config|
   	# patch the hostname
   	echo "ams-playerstage" > /etc/hostname
   	hostname "ams-playerstage"
+
+  	# the default display
+  	echo "export DISPLAY=:1" >> /etc/profile
 
   	# noVNC
   	rm -rf /srv/noVNC 2> /dev/null
