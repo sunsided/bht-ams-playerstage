@@ -67,7 +67,7 @@ player pstlab.cfg &
 ./simple localhost
 ```
 
-Should you close the Xterm window, try righ-clicking the desktop.
+Should you close the Xterm window, try right-clicking the desktop.
 
 ## About the project
 
