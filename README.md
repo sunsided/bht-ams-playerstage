@@ -83,19 +83,19 @@ You can watch a demo video [here](http://www.youtube.com/watch?v=eAbF3QBGwzA).
 
 The robot is modeled without slippage and measurement errors and sports a differential drive with v-omega control.
 
-![Stage](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/stage.png)
+![Stage](images/frontiers-1/stage.png)
 
-### Mapping ###
+### Robot Map window ###
 
-This shows the map created by the robot, as well as the past trajectory. The yellow vectors points at the nearest unexplored boundary, using a Manhattan distance measure without paying attention to obstacles. As such, it is measured in air distance, which might be used as a heuristic for A* later on.
+The Robot Map shows the map created by the robot, as well as the past trajectory. The yellow vectors points at the nearest unexplored boundary, using a Manhattan distance measure without paying attention to obstacles. As such, it is measured in air distance, which might be used as a heuristic for A* later on.
 
-![Map](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/map.png)
+![Map](images/frontiers-1/map.png)
 
 ### Frontiers and algorithm termination ###
 
 This program implements a frontier-based approach to exploration. A queue-linear flood fill algorithm is used to determine knowledge boundaries (white), i.e. areas that have not been scanned by the robot. The exploration algorithm terminates if no frontiers are left, meaning that the whole terrain has been explored. 
 
-![Frontiers](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/frontiers.png)
+![Frontiers](images/frontiers-1/frontiers.png)
 
 More on frontier-based exploration can be found in e.g. *A Frontier-Based Approach for Autonomous Exploration* by Brian Yamauchi ([http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.121.2826](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.121.2826))
 
