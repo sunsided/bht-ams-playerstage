@@ -1,28 +1,30 @@
 bht-ams-playerstage
 ===================
 
-Kurs Autonome Mobile Systeme an der Beuth Hochschule für Technik. Simulation eines VolksBot mit Laserranger zwecks SLAM.
+Autonomous Mobile Systems class at Beuth Hochschule für Technik, Berlin. Simulation of a [VolksBot](http://www.volksbot.de/) with (error-free) laser rangers.
 
-### Erster Ansatz zur Exploration ###
+### Approach to exploration ###
 
-Ein früher Ansatz mittels vermaschter P-Regler zum Steuern der Bahn- und Winkelgeschwindigkeit in Abhängigkeit von der Nähe und Entfernung zu Hindernissen.
+This implements a simple approach using meshed P controllers for forward and angular velocity in dependance of the distance to the next obstacle. 
+
+You can watch a demo video [here](http://www.youtube.com/watch?v=eAbF3QBGwzA).
 
 [![Exploration Demo Video](http://img.youtube.com/vi/eAbF3QBGwzA/0.jpg)](http://www.youtube.com/watch?v=eAbF3QBGwzA)
 
-### Stage ###
+### Stage / robot setup ###
 
-Das Set-Up: Schlupf- und messfehlerfreier Roboter mit Differentialantrieb und v-omega-Steuerung.
+The robot is modeled without slippage and measurement errors and sports a differential drive with v-omega control.
 
 ![Stage](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/stage.png)
 
-### Karte ###
+### Mapping ###
 
-Die vom Roboter erstellte Karte. Der gelbe Vektor weist auf die näheste unerforschte Grenze, wobei die Manhattan-Distanz ohne Betrachtung von Hindernissen verwendet wurde.
+This shows the map created by the robot, as well as the past trajectory. The yellow vectors points at the nearest unexplored boundary, using a Manhattan distance measure without paying attention to obstacles. As such, it is measured in air distance, which might be used as a heuristic for A* later on.
 
 ![Map](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/map.png)
 
-### Frontiers ###
+### Frontiers and algorithm termination ###
 
-Mittels des Queue-Linear Flood Fill-Algorithmus erkannte Wissensgrenzen (weiß) zeigen Bereiche, die vom Roboter noch nicht gescannt wurden. Treten keine Grenzen mehr in der Karte auf, ist der Bereich vollständig erkundet.
+This program implements a frontied-based approach to exploration. A queue-linear flood fill algorithm is used to determine knowledge boundaries (white), i.e. areas that have not been scanned by the robot. The exploration algorithm terminates if no frontiers are left, meaning that the whole terrain has been explored. 
 
 ![Frontiers](https://raw.github.com/sunsided/bht-ams-playerstage/feature/frontiers-1/images/frontiers-1/frontiers.png)
