@@ -8,6 +8,7 @@ Vagrant.configure(2) do |config|
   config.vm.network "forwarded_port", guest: 5900, host: 5900
 
   config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
   	apt-get -y install --no-install-recommends \
   		libopencv-dev libopencv-highgui-dev \
   		xserver-xorg-video-dummy x11vnc \
