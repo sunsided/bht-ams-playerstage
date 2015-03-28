@@ -54,11 +54,13 @@ To run the code, you basically
 * start `player pstlab.cfg`
 * then start `./simple localhost`
 
-Note that `player` and `./simple` both require an X11 display. On Linux, you may try passing your `$DISPLAY` environment when connecting via ssh.
+Note that `player` and `./simple` both require an X11 display. On Linux, you may try passing your `$DISPLAY` environment when connecting via ssh. The easiest way is to connect to a terminal with X forwarding enabled, using
 
-##### Integrated VNC with browser frontend
+```bash
+vagrant ssh -- -X xterm
+```
 
-For convenience, a dummy Xorg with fluxbox, as well as a noVNC server is started when the VM boots up. In your browser, you may go to `http://localhost:6080/vnc.html` to connect. Leave the password box empty.
+and then, within the VM, type
 
 ```bash
 cd /vagrant
@@ -66,6 +68,10 @@ make
 player pstlab.cfg &
 ./simple localhost
 ```
+
+##### Integrated VNC with browser frontend
+
+For convenience, a dummy Xorg with fluxbox, as well as a noVNC server is started when the VM boots up. In your browser, you may go to `http://localhost:6080/vnc.html` to connect. Leave the password box empty.
 
 Should you close the Xterm window, try right-clicking the desktop.
 
